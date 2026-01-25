@@ -1,6 +1,11 @@
-import './assets/main.css'
-
-import { createApp } from 'vue'
+import {createApp} from 'vue'
 import App from './App.vue'
+import router from './router'
+import {permission, role} from './directives/permission'
 
-createApp(App).mount('#app')
+const app = createApp(App)
+
+app.use(router)
+app.directive('permission', permission)
+app.directive('role', role)
+app.mount('#app')
