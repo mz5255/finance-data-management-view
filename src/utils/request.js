@@ -2,7 +2,7 @@ import axios from 'axios'
 
 // 创建axios实例
 const request = axios.create({
-    baseURL: process.env.VUE_APP_BASE_API || 'http://localhost:8080',
+    baseURL: import.meta.env.VITE_APP_BASE_API || 'http://localhost:8080',
     timeout: 10000
 })
 

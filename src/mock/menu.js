@@ -11,7 +11,7 @@ export const mockMenuData = [
                 id: 11,
                 title: '用户管理',
                 path: '/dashboard/demo/users',
-                component: '/demo/UserList.vue',
+                component: '/demo/UserList',
                 permission: 'system:user:list',
                 icon: 'icon-user'
             },
@@ -19,7 +19,7 @@ export const mockMenuData = [
                 id: 12,
                 title: '权限管理',
                 path: '/dashboard/permission/management',
-                component: '/permission/PermissionManagement.vue',
+                component: '/permission/PermissionManagement',
                 permission: 'system:permission:manage',
                 icon: 'icon-permission'
             }
@@ -29,7 +29,7 @@ export const mockMenuData = [
         id: 2,
         title: '个人中心',
         path: '/dashboard/auth/profile',
-        component: '/auth/UserProfile.vue',
+        component: '/auth/UserProfile',
         permission: 'user:profile',
         icon: 'icon-profile'
     }

@@ -27,7 +27,7 @@ import {onMounted, ref} from 'vue'
 import {useRouter} from 'vue-router'
 import {authApi} from '@/api/auth'
 import {userStore} from '@/store/user'
-import {registerDynamicRoutes} from '@/router'
+import {registerDynamicRoutes} from '@/utils/route-helper'
 import MenuItem from '@/components/MenuItem.vue'
 
 export default {
@@ -51,7 +51,7 @@ export default {
       // 否则重新加载
       await userStore.loadUserData(userId)
       userMenus.value = userStore.menus
-      registerDynamicRoutes(userStore.menus)
+      registerDynamicRoutes(router, userStore.menus)
     }
 
     const handleNavigate = (path) => {

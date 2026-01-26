@@ -1,5 +1,6 @@
 <template>
   <div class="register-container">
+    <div class="register-overlay"></div>
     <div class="register-form">
       <h2>用户注册</h2>
       <form @submit.prevent="handleRegister">
@@ -100,18 +101,49 @@ export default {
 <style scoped>
 .register-container {
   display: flex;
-  justify-content: center;
-  align-items: center;
+  justify-content: flex-end;
+  align-items: flex-start;
   min-height: 100vh;
-  background-color: #f5f5f5;
+  padding: 50px 80px;
+  box-sizing: border-box;
+  /* 保持与登录页一致的背景图 */
+  background-image: url('@/base/images/register.jpg');
+  background-size: 100% 100%;
+  background-position: center;
+  position: relative;
+}
+
+.register-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 1;
 }
 
 .register-form {
-  background: white;
+  position: relative;
+  z-index: 2;
+  /* 全透明背景 */
+  background: transparent;
   padding: 40px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  width: 400px;
+  border-radius: 20px;
+  width: 420px;
+  /* 极致纯净感 */
+  border: none;
+  box-shadow: none;
+}
+
+.register-form h2 {
+  text-align: center;
+  margin-bottom: 35px;
+  color: #ffffff;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .form-group {
@@ -120,21 +152,36 @@ export default {
 
 .form-group label {
   display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #ffffff;
+  font-size: 0.95rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .form-group input {
   width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  padding: 12px 15px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
   box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(5px);
+  color: #ffffff;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #ffffff;
+  background: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
 }
 
 .captcha-group {
   display: flex;
-  gap: 10px;
+  gap: 12px;
 }
 
 .captcha-group input {
@@ -142,37 +189,64 @@ export default {
 }
 
 .btn-captcha {
-  padding: 10px 15px;
-  background: #28a745;
+  padding: 0 20px;
+  background: linear-gradient(135deg, #28a745 0%, #218838 100%);
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 10px;
   cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.btn-captcha:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
 }
 
 .btn-register {
   width: 100%;
-  padding: 12px;
-  background: #007bff;
+  padding: 14px;
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 12px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-top: 10px;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+}
+
+.btn-register:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 123, 255, 0.4);
 }
 
 .btn-register:disabled {
   background: #ccc;
+  box-shadow: none;
   cursor: not-allowed;
 }
 
 .actions {
   text-align: center;
-  margin-top: 20px;
+  margin-top: 25px;
 }
 
 .actions a {
-  color: #007bff;
+  color: #ffffff;
   text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.actions a:hover {
+  color: #007bff;
+  text-decoration: underline;
 }
 </style>
