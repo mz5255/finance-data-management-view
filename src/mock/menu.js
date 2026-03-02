@@ -10,8 +10,8 @@ export const mockMenuData = [
             {
                 id: 11,
                 title: '用户管理',
-                path: '/dashboard/demo/users',
-                component: '/demo/UserList',
+                path: '/dashboard/user',
+                component: '/UserList',
                 permission: 'system:user:list',
                 icon: 'icon-user'
             },

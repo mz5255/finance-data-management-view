@@ -1,12 +1,23 @@
 import request from '@/utils/request'
 
 export const authApi = {
-    // 获取验证码
-    getCaptcha(telephone) {
+    // 获取图片验证码
+    getCaptcha(captchaKey) {
+        console.log('发起验证码请求...')
         return request({
             url: '/api/finance-data/auth/captchaImage',
             method: 'get',
-            params: {telephone}
+            params: {captchaKey},
+            responseType: 'blob'
+        }).then(response => {
+            console.log('验证码响应:', response)
+            // 直接返回blob URL
+            return URL.createObjectURL(response)
+        }).catch(error => {
+            console.error('验证码请求失败:', error)
+            console.error('请求配置:', error.config)
+            // 返回一个占位图片URL或者重新抛出错误
+            throw error
         })
     },
 

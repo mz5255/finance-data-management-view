@@ -1,64 +1,175 @@
 <template>
   <div class="login-container">
-    <div class="login-overlay"></div>
-    <div class="login-form">
-      <h2>用户登录</h2>
-      <form @submit.prevent="handleLogin">
-        <div class="form-group">
-          <label>手机号:</label>
-          <input v-model="loginForm.telephone" required type="tel"/>
+    <!-- Background Orbs -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <!-- Full Screen Particles -->
+    <div class="particles-container">
+      <div v-for="i in 100" :key="i" :style="{animationDelay: `${i * 0.05}s`, left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%`}"
+           class="particle"></div>
+    </div>
+
+    <!-- Left Animation Section -->
+    <div class="animation-section">
+      <div class="animation-content">
+        <!-- Background Grid -->
+        <div class="grid-background"></div>
+
+        <!-- Animated Orbs -->
+        <div class="animated-orbs">
+          <div class="orb orb-large"></div>
+          <div class="orb orb-medium"></div>
+          <div class="orb orb-small"></div>
         </div>
-        <div class="form-group">
-          <label>密码:</label>
-          <input v-model="loginForm.password" required type="password"/>
-        </div>
-        <div class="form-group">
-          <label>验证码:</label>
-          <div class="captcha-group">
-            <input v-model="loginForm.captcha" required type="text"/>
-            <button class="btn-captcha" type="button" @click="getCaptcha">获取验证码</button>
+
+        <div class="hero-text">
+          <h1 class="gradient-text animate-float animate-glow">综合数据管理平台</h1>
+          <p class="hero-subtitle animate-fade-in">安全、高效、智能的综合数据管理解决方案</p>
+
+          <!-- Animated Stats -->
+          <div class="stats-container">
+            <div class="stat-item">
+              <div class="stat-number animate-count">100%</div>
+              <div class="stat-label">安全保障</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-number animate-count">99.9%</div>
+              <div class="stat-label">系统可用性</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-number animate-count">5000+</div>
+              <div class="stat-label">用户信赖</div>
+            </div>
           </div>
         </div>
-        <button :disabled="loading" class="btn-login" type="submit">
-          {{ loading ? '登录中...' : '登录' }}
-        </button>
-      </form>
-      <div class="actions">
-        <router-link to="/auth/register">没有账号？去注册</router-link>
+
+        <!-- Animated Gradient Lines -->
+        <div class="gradient-lines">
+          <div class="line line-1"></div>
+          <div class="line line-2"></div>
+          <div class="line line-3"></div>
+          <div class="line line-4"></div>
+          <div class="line line-5"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Middle Decorative Section -->
+    <div class="decorative-section">
+      <div class="decorative-elements">
+        <div class="glow-circle"></div>
+        <div class="glow-ring"></div>
+        <div class="glow-dot"></div>
+      </div>
+    </div>
+
+    <!-- Right Form Section -->
+    <div class="form-section">
+      <div class="login-form glass-card animate-fade-in">
+        <div class="form-header">
+          <div class="logo">
+            <svg class="logo-icon" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="url(#paint0_linear)" stroke-linecap="round" stroke-linejoin="round"
+                    stroke-width="2"/>
+              <path d="M2 17L12 22L22 17" stroke="url(#paint0_linear)" stroke-linecap="round" stroke-linejoin="round"
+                    stroke-width="2"/>
+              <path d="M2 12L12 17L22 12" stroke="url(#paint0_linear)" stroke-linecap="round" stroke-linejoin="round"
+                    stroke-width="2"/>
+              <defs>
+                <linearGradient id="paint0_linear" gradientUnits="userSpaceOnUse" x1="2" x2="22" y1="2" y2="22">
+                  <stop stop-color="#3B82F6"/>
+                  <stop offset="1" stop-color="#00FFFF"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <h1 class="gradient-text">综合数据管理平台</h1>
+          </div>
+          <h2>用户登录</h2>
+          <p class="sub-title">欢迎回来， please sign in to continue</p>
+        </div>
+
+        <form @submit.prevent="handleLogin">
+          <div class="form-group">
+            <label>手机号:</label>
+            <input v-model="loginForm.telephone" placeholder="请输入手机号" required type="tel"/>
+          </div>
+          <div class="form-group">
+            <label>密码:</label>
+            <input v-model="loginForm.password" placeholder="请输入密码" required type="password"/>
+          </div>
+          <div class="form-group">
+            <label>验证码:</label>
+            <div class="captcha-group">
+              <input v-model="loginForm.captcha" placeholder="请输入验证码" required type="text"/>
+              <img
+                  v-if="captchaImage"
+                  :src="captchaImage"
+                  alt="验证码"
+                  class="captcha-image"
+                  title="点击刷新验证码"
+                  @click="getCaptcha"
+              />
+              <button v-else class="btn btn-secondary" type="button" @click="getCaptcha">
+                {{ captchaImage === '' ? '获取验证码' : '加载中...' }}
+              </button>
+            </div>
+          </div>
+          <button :disabled="loading" class="btn btn-primary animate-glow" type="submit">
+            {{ loading ? '登录中...' : '登录' }}
+          </button>
+        </form>
+        <div class="actions">
+          <router-link to="/auth/register">没有账号？去注册</router-link>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import {reactive, ref} from 'vue'
+import {onMounted, reactive, ref} from 'vue'
 import {useRouter} from 'vue-router'
 import {authApi} from '@/api/auth'
 import {userStore} from '@/store/user'
-import {registerDynamicRoutes} from '@/utils/route-helper'
+import {registerDynamicRoutes} from '@/router'
+import {v4 as uuidv4} from 'uuid'
 
 export default {
   name: 'Login',
   setup() {
     const router = useRouter()
     const loading = ref(false)
+    const captchaImage = ref('')
+    const captchaKey = ref('')
 
     const loginForm = reactive({
-      telephone: '',
-      password: '',
-      captcha: ''
+      telephone: '13130608426',
+      password: 'mazhen5255',
+      captcha: '',
+      captchaKey: ''
+    })
+
+    // 页面加载时自动获取验证码
+    onMounted(() => {
+      console.log('页面加载，开始获取验证码')
+      getCaptcha()
     })
 
     const getCaptcha = async () => {
-      if (!loginForm.telephone) {
-        alert('请先输入手机号')
-        return
-      }
       try {
-        await authApi.getCaptcha(loginForm.telephone)
-        alert('验证码已发送')
+        // 生成uuid+时间戳
+        captchaKey.value = `${uuidv4()}_${Date.now()}`
+        loginForm.captchaKey = captchaKey.value
+
+        console.log('开始获取验证码...', captchaKey.value)
+        const imageUrl = await authApi.getCaptcha(captchaKey.value)
+        console.log('验证码URL:', imageUrl)
+        captchaImage.value = imageUrl
       } catch (error) {
         console.error('获取验证码失败:', error)
+        captchaImage.value = ''
       }
     }
 
@@ -67,14 +178,13 @@ export default {
       try {
         const response = await authApi.login(loginForm)
         if (response.success) {
+          // 存储token
           localStorage.setItem('token', response.data.token)
-          localStorage.setItem('userId', response.data.userId || '1')
-
           // 加载用户数据和菜单
           await userStore.loadUserData(response.data.userId || '1')
 
           // 注册动态路由
-          registerDynamicRoutes(router, userStore.menus)
+          registerDynamicRoutes(userStore.menus)
 
           router.push('/dashboard')
         } else {
@@ -90,6 +200,7 @@ export default {
     return {
       loginForm,
       loading,
+      captchaImage,
       getCaptcha,
       handleLogin
     }
@@ -100,53 +211,461 @@ export default {
 <style scoped>
 .login-container {
   display: flex;
-  justify-content: flex-end;
-  align-items: flex-start;
+  justify-content: space-between;
+  align-items: center;
   min-height: 100vh;
-  padding: 50px 80px;
-  box-sizing: border-box;
-  /* 使用本地存放的背景图 */
-  background-image: url('@/base/images/login-bg.jpg');
-  background-size: 100% 100%;
-  background-position: center;
+  padding: 20px;
   position: relative;
+  z-index: 1;
+  gap: 40px;
 }
 
-.login-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.3);
+/* Animation Section - Left */
+.animation-section {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  min-height: 80vh;
+  overflow: hidden;
+}
+
+.animation-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   z-index: 1;
 }
 
-.login-form {
-  position: relative;
-  z-index: 2;
-  /* 全透明背景 */
+/* Grid Background */
+.grid-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, rgba(59, 130, 246, 0.05) 0%, transparent 70%);
+  z-index: 0;
+}
+
+
+/* Animated Orbs */
+.animated-orbs {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  z-index: 0;
+}
+
+.animated-orbs .orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(40px);
+  animation: orbFloat 15s infinite ease-in-out;
+}
+
+.orb-large {
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.3) 0%, rgba(0, 255, 255, 0.1) 100%);
+  top: -100px;
+  left: -100px;
+  animation-delay: 0s;
+}
+
+.orb-medium {
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.3) 0%, rgba(236, 72, 153, 0.1) 100%);
+  bottom: -50px;
+  right: 10%;
+  animation-delay: 3s;
+}
+
+.orb-small {
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.3) 0%, rgba(251, 191, 36, 0.1) 100%);
+  top: 40%;
+  right: -50px;
+  animation-delay: 6s;
+}
+
+@keyframes orbFloat {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.5;
+  }
+  25% {
+    transform: translate(20px, -20px) scale(1.1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translate(0, -40px) scale(1);
+    opacity: 0.5;
+  }
+  75% {
+    transform: translate(-20px, -20px) scale(0.9);
+    opacity: 0.3;
+  }
+}
+
+.hero-text {
+  text-align: center;
+  z-index: 10;
+  margin-bottom: 40px;
+  padding: 20px;
   background: transparent;
-  padding: 40px;
-  border-radius: 20px;
-  width: 420px;
-  /* 移除边框和阴影，实现极致纯净感 */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-radius: 0;
   border: none;
   box-shadow: none;
 }
 
-.login-form h2 {
-  text-align: center;
-  margin-bottom: 35px;
-  color: #ffffff;
-  font-size: 2rem;
-  font-weight: 700;
+.hero-text h1 {
+  font-size: 48px;
+  font-weight: 800;
+  margin-bottom: 16px;
+  font-family: 'Orbitron', sans-serif;
+  line-height: 1.2;
+  text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
   letter-spacing: 2px;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.hero-subtitle {
+  font-size: 20px;
+  color: rgba(235, 235, 235, 0.8);
+  font-family: 'Exo 2', sans-serif;
+  max-width: 500px;
+  line-height: 1.4;
+  margin-bottom: 30px;
+}
+
+/* Stats Container */
+.stats-container {
+  display: flex;
+  gap: 30px;
+  margin-top: 30px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 20px;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-radius: 0;
+  border: none;
+  min-width: 120px;
+  transition: all 0.3s ease;
+  box-shadow: none;
+}
+
+.stat-item:hover {
+  transform: translateY(-5px);
+  box-shadow: none;
+  border-color: transparent;
+}
+
+.stat-number {
+  font-size: 24px;
+  font-weight: 700;
+  color: #3B82F6;
+  font-family: 'Orbitron', sans-serif;
+  margin-bottom: 8px;
+  text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+}
+
+.stat-label {
+  font-size: 14px;
+  color: rgba(235, 235, 235, 0.6);
+  font-family: 'Exo 2', sans-serif;
+}
+
+/* Particles Animation */
+.particles-container {
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: linear-gradient(45deg, #3B82F6, #00FFFF);
+  border-radius: 50%;
+  animation: particleFloat 8s infinite ease-in-out;
+  opacity: 0.6;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.8);
+}
+
+@keyframes particleFloat {
+  0%, 100% {
+    transform: translateY(0) translateX(0) scale(1);
+    opacity: 0.6;
+  }
+  25% {
+    transform: translateY(-30px) translateX(15px) scale(1.3);
+    opacity: 0.9;
+  }
+  50% {
+    transform: translateY(-60px) translateX(0) scale(1);
+    opacity: 0.6;
+  }
+  75% {
+    transform: translateY(-30px) translateX(-15px) scale(0.8);
+    opacity: 0.3;
+  }
+}
+
+/* Gradient Lines Animation */
+.gradient-lines {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.line {
+  position: absolute;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.3), transparent);
+  height: 1px;
+  animation: lineMove 4s infinite ease-in-out;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+}
+
+.line-1 {
+  top: 10%;
+  width: 100%;
+  animation-delay: 0s;
+}
+
+.line-2 {
+  top: 30%;
+  width: 80%;
+  left: 10%;
+  animation-delay: 0.5s;
+}
+
+.line-3 {
+  top: 50%;
+  width: 60%;
+  left: 20%;
+  animation-delay: 1s;
+}
+
+.line-4 {
+  top: 70%;
+  width: 80%;
+  left: 10%;
+  animation-delay: 1.5s;
+}
+
+.line-5 {
+  top: 90%;
+  width: 100%;
+  animation-delay: 2s;
+}
+
+@keyframes lineMove {
+  0%, 100% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  50% {
+    transform: translateX(100%);
+    opacity: 1;
+  }
+}
+
+/* Count Animation */
+@keyframes countUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-count {
+  animation: countUp 1s ease-out forwards;
+}
+
+/* Enhanced Glow Animation */
+@keyframes enhancedGlow {
+  0%, 100% {
+    text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+  }
+  50% {
+    text-shadow: 0 0 40px rgba(59, 130, 246, 0.8), 0 0 60px rgba(0, 255, 255, 0.6);
+  }
+}
+
+.animate-glow {
+  animation: enhancedGlow 2s ease-in-out infinite;
+}
+
+/* Decorative Section - Middle */
+.decorative-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 200px;
+  height: 100%;
+  position: relative;
+}
+
+.decorative-elements {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.glow-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.3) 0%, rgba(0, 255, 255, 0.1) 100%);
+  animation: glowPulse 3s infinite ease-in-out;
+  position: absolute;
+}
+
+.glow-ring {
+  width: 120px;
+  height: 120px;
+  border: 2px solid rgba(59, 130, 246, 0.3);
+  border-radius: 50%;
+  animation: ringRotate 8s infinite linear;
+  position: absolute;
+}
+
+.glow-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, #3B82F6, #00FFFF);
+  animation: dotPulse 2s infinite ease-in-out;
+  position: absolute;
+  top: 40%;
+  right: 30%;
+}
+
+@keyframes glowPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.9;
+  }
+}
+
+@keyframes ringRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dotPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 1;
+  }
+}
+
+/* Form Section - Right */
+.form-section {
+  flex: 0 0 420px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-form {
+  width: 100%;
+  padding: 40px;
+  border-radius: 0;
+  position: relative;
+  z-index: 2;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.form-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.logo-icon {
+  width: 40px;
+  height: 40px;
+}
+
+.logo h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  font-family: 'Orbitron', sans-serif;
+}
+
+.login-form h2 {
+  margin: 0 0 8px 0;
+  color: #ffffff;
+  font-size: 28px;
+  font-weight: 700;
+  font-family: 'Orbitron', sans-serif;
+}
+
+.sub-title {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(235, 235, 235, 0.64);
 }
 
 .form-group {
-  margin-bottom: 25px;
+  margin-bottom: 24px;
 }
 
 .form-group label {
@@ -154,107 +673,116 @@ export default {
   margin-bottom: 8px;
   font-weight: 600;
   color: #ffffff;
-  font-size: 0.95rem;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  font-size: 14px;
+  font-family: 'Exo 2', sans-serif;
 }
 
 .form-group input {
   width: 100%;
-  padding: 12px 15px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 10px;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
   box-sizing: border-box;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(5px);
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   color: #ffffff;
   transition: all 0.3s ease;
-  font-size: 1rem;
+  font-size: 14px;
+  font-family: 'Exo 2', sans-serif;
 }
 
 .form-group input::placeholder {
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .form-group input:focus {
   outline: none;
-  border-color: #ffffff;
-  background: rgba(255, 255, 255, 0.25);
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+  border-color: #3B82F6;
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
 }
 
 .captcha-group {
   display: flex;
   gap: 12px;
+  align-items: center;
 }
 
 .captcha-group input {
   flex: 1;
 }
 
-.btn-captcha {
-  padding: 0 20px;
-  background: linear-gradient(135deg, #28a745 0%, #218838 100%);
-  color: white;
-  border: none;
-  border-radius: 10px;
+.captcha-image {
+  height: 48px;
+  border-radius: 12px;
   cursor: pointer;
-  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease;
-  white-space: nowrap;
 }
 
-.btn-captcha:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+.captcha-image:hover {
+  border-color: #3B82F6;
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
 }
 
 .btn-login {
   width: 100%;
-  padding: 14px;
-  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  font-size: 1.1rem;
+  margin-top: 16px;
+  justify-content: center;
+  font-size: 16px;
   font-weight: 700;
-  margin-top: 10px;
-  transition: all 0.3s ease;
-  box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
-}
-
-.btn-login:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 123, 255, 0.4);
-}
-
-.btn-login:active {
-  transform: translateY(0);
-}
-
-.btn-login:disabled {
-  background: #ccc;
-  box-shadow: none;
-  cursor: not-allowed;
-  transform: none;
+  padding: 14px;
 }
 
 .actions {
   text-align: center;
-  margin-top: 25px;
+  margin-top: 24px;
 }
 
 .actions a {
-  color: #ffffff;
+  color: #3B82F6;
   text-decoration: none;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 14px;
   transition: all 0.3s ease;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .actions a:hover {
-  color: #007bff;
+  color: #60A5FA;
   text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .login-container {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .animation-section {
+    order: 1;
+    min-height: 300px;
+  }
+
+  .decorative-section {
+    order: 2;
+    width: 100px;
+    height: 100px;
+  }
+
+  .form-section {
+    order: 3;
+    flex: 1;
+    max-width: 420px;
+  }
+
+  .hero-text h1 {
+    font-size: 28px;
+  }
+
+  .hero-subtitle {
+    font-size: 16px;
+  }
 }
 </style>
