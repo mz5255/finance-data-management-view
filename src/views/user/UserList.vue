@@ -1,497 +1,285 @@
 <template>
-  <div class="user-list">
-    <div class="page-header animate-fade-in">
-      <h2 class="gradient-text">用户管理</h2>
-      <p class="sub-title">管理系统用户信息</p>
-    </div>
+  <div class="user-list-page">
+    <!-- 背景装饰 -->
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
 
-    <div class="actions glass-card animate-fade-in">
-      <div class="action-buttons">
-        <button
-            v-permission="'system:user:list'"
-            class="btn btn-primary animate-glow"
-            @click="fetchUsers"
-        >
-          <i class="icon-refresh"></i>
-          刷新列表
-        </button>
-        <button
-            v-role="'admin'"
-            class="btn btn-secondary"
-            @click="addUser"
-        >
-          <i class="icon-plus"></i>
-          添加用户
-        </button>
-      </div>
-      <div class="search-bar">
-        <input
-            v-model="searchKeyword"
-            class="search-input"
-            placeholder="搜索用户..."
-            type="text"
-        />
-        <button class="btn btn-secondary">
-          <i class="icon-search"></i>
-        </button>
-      </div>
-    </div>
-
-    <div v-if="loading" class="loading-container glass-card animate-fade-in">
-      <div class="loading-spinner"></div>
-      <p>加载中...</p>
-    </div>
-
-    <div v-if="users.length" class="user-table-container glass-card animate-fade-in">
-      <div class="table-wrapper">
-        <table class="user-table">
-          <thead>
-          <tr>
-            <th>用户ID</th>
-            <th>手机号</th>
-            <th>昵称</th>
-            <th>角色</th>
-            <th>状态</th>
-            <th>认证状态</th>
-            <th>操作</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr v-for="user in users" :key="user.userId" class="table-row">
-            <td class="user-id">{{ user.userId }}</td>
-            <td class="user-phone">{{ user.telephone }}</td>
-            <td class="user-nickname">{{ user.nickName || '无' }}</td>
-            <td class="user-role">
-              <span :class="user.userRole.toLowerCase()" class="role-badge">
-                {{ user.userRole }}
-              </span>
-            </td>
-            <td class="user-state">
-              <span :class="user.state.toLowerCase()" class="state-badge">
-                {{ user.state }}
-              </span>
-            </td>
-            <td class="user-certification">
-              <span :class="user.certification ? 'certified' : 'uncertified'" class="cert-badge">
-                {{ user.certification ? '已认证' : '未认证' }}
-              </span>
-            </td>
-            <td class="user-actions">
-              <button
-                  v-permission="'system:user:edit'"
-                  class="btn btn-sm btn-secondary"
-                  @click="editUser(user)"
-              >
-                <i class="icon-edit"></i>
-                编辑
-              </button>
-              <button
-                  v-permission="'system:user:delete'"
-                  class="btn btn-sm btn-secondary"
-                  @click="deleteUser(user.userId)"
-              >
-                <i class="icon-delete"></i>
-                删除
-              </button>
-            </td>
-          </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="pagination">
-        <span class="total">共 {{ total }} 条记录</span>
-        <div class="pagination-controls">
-          <button :disabled="currentPage === 1" class="btn btn-sm">上一页</button>
-          <span class="page-info gradient-text">{{ currentPage }} / {{ totalPages }}</span>
-          <button :disabled="currentPage === totalPages" class="btn btn-sm">下一页</button>
+    <!-- 页面头部 -->
+    <div class="page-header glass-card">
+      <div class="header-content">
+        <div class="title-section">
+          <div class="icon-wrapper">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="url(#paint0_linear)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="9" cy="7" r="4" stroke="url(#paint0_linear)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <defs>
+                <linearGradient id="paint0_linear" x1="1" y1="7" x2="17" y2="21" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#3B82F6"/>
+                  <stop offset="1" stop-color="#00FFFF"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <div class="title-text">
+            <h1>用户管理</h1>
+            <p>管理系统用户信息</p>
+          </div>
         </div>
+        <el-button type="primary" size="large" @click="handleAdd" class="add-btn">
+          <el-icon><Plus /></el-icon>
+          新增用户
+        </el-button>
       </div>
     </div>
 
-    <div v-else-if="!loading" class="empty-state glass-card animate-fade-in">
-      <div class="empty-icon">
-        <i class="icon-user"></i>
-      </div>
-      <h3>暂无用户数据</h3>
-      <p>点击"添加用户"按钮创建新用户</p>
-      <button
-          v-role="'admin'"
-          class="btn btn-primary animate-glow"
-          @click="addUser"
-      >
-        添加用户
-      </button>
+    <!-- 用户表格卡片 -->
+    <div class="table-card glass-card">
+      <el-table :data="userList" v-loading="loading" stripe class="modern-table">
+        <el-table-column prop="userId" label="用户ID" width="200" />
+        <el-table-column prop="userName" label="用户名" width="120" />
+        <el-table-column prop="nickName" label="昵称" width="120" />
+        <el-table-column prop="telephone" label="手机号" width="130" />
+        <el-table-column prop="status" label="状态" width="80" align="center">
+          <template #default="{ row }">
+            <el-tag :type="row.status === '0' ? 'success' : 'danger'" effect="dark">
+              {{ row.status === '0' ? '正常' : '停用' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="200" align="center" fixed="right">
+          <template #default="{ row }">
+            <div class="action-buttons">
+              <el-button link type="primary" @click="handleEdit(row)" class="action-btn edit-btn">
+                <el-icon><Edit /></el-icon>
+                编辑
+              </el-button>
+              <el-button link type="danger" @click="handleDelete(row)" class="action-btn delete-btn">
+                <el-icon><Delete /></el-icon>
+                删除
+              </el-button>
+            </div>
+          </template>
+        </el-table-column>
+      </el-table>
     </div>
   </div>
 </template>
 
-<script>
-import {onMounted, ref} from 'vue'
-import {userApi} from '@/api/user'
+<script setup>
+import { ref, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
+import { Plus, Edit, Delete } from '@element-plus/icons-vue'
+import { userApi } from '@/api/user'
 
-export default {
-  name: 'UserList',
-  setup() {
-    const users = ref([])
-    const loading = ref(false)
-    const searchKeyword = ref('')
-    const currentPage = ref(1)
-    const total = ref(0)
-    const totalPages = ref(1)
+const userList = ref([])
+const loading = ref(false)
 
-    const fetchUsers = async () => {
-      loading.value = true
-      try {
-        const response = await userApi.getUserList()
-        console.log('后端返回数据:', response)
-        if (response.success) {
-          // 适配后端返回的IPage<UserInfo>结构
-          users.value = response.data?.records || response.data || []
-          total.value = response.data?.total || 0
-          totalPages.value = response.data?.pages || 1
-          currentPage.value = response.data?.current || 1
-          console.log('解析后的数据:', users.value)
-        } else {
-          console.error('后端返回失败:', response.message)
-        }
-      } catch (error) {
-        console.error('获取用户列表失败:', error)
-      } finally {
-        loading.value = false
-      }
+const fetchUsers = async () => {
+  loading.value = true
+  try {
+    const response = await userApi.getUserList()
+    console.log('用户列表响应:', response)
+    if (response.success) {
+      userList.value = response.data.records || []
+    } else {
+      ElMessage.error(response.message || '获取用户列表失败')
     }
-
-    const deleteUser = async (userId) => {
-      if (confirm(`确定要删除用户 ${userId} 吗？`)) {
-        try {
-          const response = await userApi.deleteUser(userId)
-          if (response.success) {
-            alert('删除成功')
-            fetchUsers()
-          }
-        } catch (error) {
-          console.error('删除用户失败:', error)
-        }
-      }
-    }
-
-    const addUser = () => {
-      alert('添加用户功能')
-    }
-
-    const editUser = (user) => {
-      alert(`编辑用户: ${user.telephone}`)
-    }
-
-    // 页面加载时自动获取用户列表
-    onMounted(() => {
-      fetchUsers()
-    })
-
-    return {
-      users,
-      loading,
-      searchKeyword,
-      currentPage,
-      total,
-      totalPages,
-      fetchUsers,
-      deleteUser,
-      addUser,
-      editUser
-    }
+  } catch (error) {
+    console.error('获取用户列表失败:', error)
+    ElMessage.error('获取用户列表失败')
+  } finally {
+    loading.value = false
   }
 }
+
+const handleAdd = () => {
+  ElMessage.info('新增用户功能开发中...')
+}
+
+const handleEdit = (row) => {
+  ElMessage.info('编辑用户功能开发中...')
+}
+
+const handleDelete = (row) => {
+  ElMessage.info('删除用户功能开发中...')
+}
+
+onMounted(() => {
+  console.log('UserList 组件已挂载')
+  fetchUsers()
+})
 </script>
 
 <style scoped>
-.user-list {
-  padding: 30px;
+.user-list-page {
   min-height: 100vh;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 背景装饰 */
+.bg-orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.orb-1 {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(0, 255, 255, 0.05) 100%);
+  top: -100px;
+  right: -100px;
+}
+
+.orb-2 {
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.12) 0%, rgba(236, 72, 153, 0.05) 100%);
+  bottom: -50px;
+  left: -50px;
+}
+
+/* 玻璃态卡片 */
+.glass-card {
+  background: rgba(17, 25, 40, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   position: relative;
   z-index: 1;
 }
 
+/* 页面头部 */
 .page-header {
-  margin-bottom: 30px;
+  margin-bottom: 24px;
+  padding: 24px 32px;
 }
 
-.page-header h2 {
-  margin: 0 0 8px 0;
-  font-size: 32px;
-  font-weight: 700;
-  font-family: 'Orbitron', sans-serif;
-}
-
-.sub-title {
-  margin: 0;
-  font-size: 14px;
-  color: rgba(235, 235, 235, 0.64);
-}
-
-.actions {
+.header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+}
+
+.title-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.icon-wrapper {
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(0, 255, 255, 0.1));
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.icon-wrapper svg {
+  width: 28px;
+  height: 28px;
+}
+
+.title-text h1 {
+  margin: 0 0 4px 0;
+  font-size: 24px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.7) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.title-text p {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.add-btn {
+  background: linear-gradient(135deg, #3B82F6 0%, #00FFFF 100%);
+  border: none;
+  color: #000;
+  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.add-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+}
+
+/* 表格卡片 */
+.table-card {
   padding: 24px;
-  border-radius: 16px;
+}
+
+/* 表格样式 */
+:deep(.modern-table) {
+  background: transparent;
+}
+
+:deep(.modern-table .el-table__header-wrapper) {
+  background: rgba(59, 130, 246, 0.1);
+  border-radius: 12px;
+}
+
+:deep(.modern-table th) {
+  background: transparent !important;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+:deep(.modern-table td) {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+:deep(.modern-table tr:hover td) {
+  background: rgba(59, 130, 246, 0.08) !important;
+}
+
+:deep(.modern-table .el-table__body tr) {
+  background: transparent;
 }
 
 .action-buttons {
   display: flex;
-  gap: 16px;
-}
-
-.search-bar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.search-input {
-  padding: 10px 16px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  font-size: 14px;
-  width: 280px;
-  transition: all 0.3s ease;
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: #3B82F6;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.search-input::placeholder {
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
-  padding: 80px;
-  border-radius: 16px;
-  margin: 20px 0;
-}
-
-.loading-spinner {
-  width: 48px;
-  height: 48px;
-  border: 3px solid rgba(59, 130, 246, 0.3);
-  border-top: 3px solid #3B82F6;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 20px;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-.user-table-container {
-  border-radius: 16px;
-  overflow: hidden;
-  margin: 20px 0;
-}
-
-.table-wrapper {
-  overflow-x: auto;
-}
-
-.user-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
-
-.user-table th {
-  background: rgba(59, 130, 246, 0.1);
-  font-weight: 600;
-  color: #ffffff;
-  text-align: left;
-  padding: 16px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  white-space: nowrap;
-  font-family: 'Orbitron', sans-serif;
-}
-
-.user-table td {
-  padding: 14px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  white-space: nowrap;
-  color: rgba(235, 235, 235, 0.8);
-}
-
-.table-row {
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-.table-row:hover {
-  background: rgba(59, 130, 246, 0.05);
-  transform: translateY(-2px);
-}
-
-.role-badge, .state-badge, .cert-badge {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 16px;
-  font-size: 12px;
-  font-weight: 500;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.role-badge.customer {
-  background: rgba(59, 130, 246, 0.2);
-  color: #60A5FA;
-  border-color: rgba(59, 130, 246, 0.3);
-}
-
-.role-badge.admin {
-  background: rgba(249, 115, 22, 0.2);
-  color: #F97316;
-  border-color: rgba(249, 115, 22, 0.3);
-}
-
-.state-badge.init {
-  background: rgba(82, 196, 26, 0.2);
-  color: #52c41a;
-  border-color: rgba(82, 196, 26, 0.3);
-}
-
-.state-badge.active {
-  background: rgba(59, 130, 246, 0.2);
-  color: #60A5FA;
-  border-color: rgba(59, 130, 246, 0.3);
-}
-
-.state-badge.inactive {
-  background: rgba(255, 77, 79, 0.2);
-  color: #ff4d4f;
-  border-color: rgba(255, 77, 79, 0.3);
-}
-
-.cert-badge.certified {
-  background: rgba(82, 196, 26, 0.2);
-  color: #52c41a;
-  border-color: rgba(82, 196, 26, 0.3);
-}
-
-.cert-badge.uncertified {
-  background: rgba(255, 77, 79, 0.2);
-  color: #ff4d4f;
-  border-color: rgba(255, 77, 79, 0.3);
-}
-
-.user-actions {
-  display: flex;
   gap: 8px;
 }
 
-.pagination {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(10, 14, 39, 0.5);
-}
-
-.total {
-  font-size: 14px;
-  color: rgba(235, 235, 235, 0.64);
-}
-
-.pagination-controls {
+.action-btn {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 4px;
+  font-size: 13px;
 }
 
-.page-info {
-  font-size: 14px;
-  font-weight: 600;
-  min-width: 80px;
-  text-align: center;
-  font-family: 'Orbitron', sans-serif;
+/* Element Plus 深色主题覆盖 */
+:deep(.el-button) {
+  color: rgba(255, 255, 255, 0.8);
 }
 
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 80px;
-  border-radius: 16px;
-  text-align: center;
-  margin: 20px 0;
+:deep(.el-button--primary) {
+  background: linear-gradient(135deg, #3B82F6 0%, #00FFFF 100%);
+  border: none;
+  color: #000;
 }
 
-.empty-icon {
-  width: 100px;
-  height: 100px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(59, 130, 246, 0.1);
-  border-radius: 50%;
-  margin-bottom: 24px;
-  border: 1px solid rgba(59, 130, 246, 0.2);
-}
-
-.empty-icon i {
-  font-size: 48px;
-  color: #3B82F6;
-}
-
-.empty-state h3 {
-  margin: 0 0 12px 0;
-  font-size: 20px;
-  color: #ffffff;
-  font-family: 'Orbitron', sans-serif;
-}
-
-.empty-state p {
-  margin: 0 0 32px 0;
-  font-size: 14px;
-  color: rgba(235, 235, 235, 0.64);
-}
-
-/* 图标样式 */
-.icon-refresh::before {
-  content: '⟳';
-}
-
-.icon-plus::before {
-  content: '+';
-}
-
-.icon-search::before {
-  content: '🔍';
-}
-
-.icon-edit::before {
-  content: '✏️';
-}
-
-.icon-delete::before {
-  content: '🗑️';
-}
-
-.icon-user::before {
-  content: '👤';
+:deep(.el-tag) {
+  border: none;
 }
 </style>

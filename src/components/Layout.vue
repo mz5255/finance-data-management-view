@@ -24,7 +24,7 @@
       <nav class="menu">
         <menu-item
             v-for="menu in userMenus"
-            :key="menu.id"
+            :key="menu.menuId"
             :menu="menu"
             @navigate="handleNavigate"
         />
@@ -43,8 +43,8 @@
 </template>
 
 <script>
-import {onMounted, ref} from 'vue'
-import {useRouter} from 'vue-router'
+import {onMounted, ref, watch} from 'vue'
+import {useRouter, useRoute} from 'vue-router'
 import {authApi} from '@/api/auth'
 import {userStore} from '@/store/user'
 import {registerDynamicRoutes} from '@/router'
@@ -57,25 +57,28 @@ export default {
   },
   setup() {
     const router = useRouter()
+    const route = useRoute()
     const userMenus = ref([])
 
     const loadUserMenus = async () => {
       const userId = localStorage.getItem('userId') || '1'
 
-      if (userStore.menus.length > 0) {
-        userMenus.value = userStore.menus
-        return
-      }
-
+      // 总是加载用户数据（确保权限和菜单是最新的）
       await userStore.loadUserData(userId)
-      userMenus.value = userStore.menus
-      registerDynamicRoutes(userStore.menus)
+
+      // registerDynamicRoutes 会返回处理后的菜单数据（包含 fullPath）
+      // 同时也会注册动态路由到 Vue Router
+      userMenus.value = registerDynamicRoutes(userStore.menus)
+
+      // 打印路由表以便调试
+      console.log('当前路由表:', router.getRoutes().map(r => ({name: r.name, path: r.path})))
     }
 
     const handleNavigate = (path) => {
-      // 使用相对路径，去掉/dashboard前缀
-      const relativePath = path.replace('/dashboard', '')
-      router.push(relativePath)
+      // 确保路径包含 /dashboard 前缀
+      const fullPath = path.startsWith('/dashboard') ? path : `/dashboard/${path}`
+      console.log('导航到:', fullPath)
+      router.push(fullPath)
     }
 
     const logout = async () => {
@@ -88,6 +91,12 @@ export default {
         console.error('退出登录失败:', error)
       }
     }
+
+    // 监听路由变化
+    watch(() => route.path, (newPath) => {
+      console.log('当前路由路径:', newPath)
+      console.log('当前路由匹配:', route.matched)
+    }, {immediate: true})
 
     onMounted(() => {
       loadUserMenus()

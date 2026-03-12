@@ -180,8 +180,10 @@ export default {
         if (response.success) {
           // 存储token
           localStorage.setItem('token', response.data.token)
+          // 存储userId
+          localStorage.setItem('userId', response.data.userId)
           // 加载用户数据和菜单
-          await userStore.loadUserData(response.data.userId || '1')
+          await userStore.loadUserData(response.data.userId)
 
           // 注册动态路由
           registerDynamicRoutes(userStore.menus)

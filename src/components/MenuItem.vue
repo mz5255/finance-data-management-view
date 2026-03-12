@@ -3,7 +3,7 @@
     <div
         v-if="!menu.children || menu.children.length === 0"
         :class="['menu-link', { active: isActive }]"
-        @click="$emit('navigate', menu.path)"
+        @click="$emit('navigate', menu.fullPath)"
     >
       <i :class="menu.icon || 'icon-default'"></i>
       <span>{{ menu.menuName }}</span>
@@ -50,8 +50,9 @@ export default {
     const isExpanded = ref(false)
 
     const isActive = computed(() => {
-      // 使用相对路径进行匹配
-      return route.path === props.menu.path.replace('/dashboard', '')
+      // 使用 fullPath 进行匹配
+      const menuPath = props.menu.fullPath || props.menu.path
+      return route.path === menuPath
     })
 
     const toggleExpand = () => {
