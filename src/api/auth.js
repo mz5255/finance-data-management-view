@@ -40,11 +40,10 @@ export const authApi = {
     },
 
     // 查询用户信息
-    getUserInfo(data) {
+    getUserInfo() {
         return request({
-            url: '/api/finance-data/auth/query',
-            method: 'get',
-            data
+            url: '/api/finance-data/user/info',
+            method: 'get'
         })
     },
 
@@ -53,6 +52,15 @@ export const authApi = {
         return request({
             url: '/api/finance-data/auth/logout',
             method: 'post'
+        })
+    },
+
+    // 修改密码
+    changePassword(data) {
+        return request({
+            url: '/api/finance-data/auth/changePassword',
+            method: 'post',
+            data
         })
     }
 }

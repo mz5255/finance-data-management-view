@@ -43,8 +43,8 @@
 </template>
 
 <script>
-import {onMounted, ref, watch} from 'vue'
-import {useRouter, useRoute} from 'vue-router'
+import {nextTick, onMounted, ref, watch} from 'vue'
+import {useRoute, useRouter} from 'vue-router'
 import {authApi} from '@/api/auth'
 import {userStore} from '@/store/user'
 import {registerDynamicRoutes} from '@/router'
@@ -61,17 +61,53 @@ export default {
     const userMenus = ref([])
 
     const loadUserMenus = async () => {
-      const userId = localStorage.getItem('userId') || '1'
+      const userId = localStorage.getItem('userId')
+
+      if (!userId) {
+        console.warn('没有找到 userId，跳过菜单加载')
+        userMenus.value = []
+        return
+      }
+
+      console.log('Layout: 开始加载用户菜单，userId:', userId)
+
+      // 先清空旧菜单数据
+      userMenus.value = []
 
       // 总是加载用户数据（确保权限和菜单是最新的）
       await userStore.loadUserData(userId)
 
+      console.log('Layout: store.menus 长度:', userStore.menus.length)
+      console.log('Layout: store.menus 数据:', userStore.menus)
+
       // registerDynamicRoutes 会返回处理后的菜单数据（包含 fullPath）
       // 同时也会注册动态路由到 Vue Router
-      userMenus.value = registerDynamicRoutes(userStore.menus)
+      const menusWithFullPath = registerDynamicRoutes(userStore.menus)
+
+      console.log('Layout: 处理后的菜单长度:', menusWithFullPath.length)
+      console.log('Layout: 处理后的菜单:', JSON.stringify(menusWithFullPath, null, 2))
+
+      // 使用 nextTick 确保 Vue 更新
+      await nextTick()
+      userMenus.value = menusWithFullPath
 
       // 打印路由表以便调试
-      console.log('当前路由表:', router.getRoutes().map(r => ({name: r.name, path: r.path})))
+      const allRoutes = router.getRoutes()
+      console.log('Layout: 所有路由数量:', allRoutes.length)
+
+      // 打印 Dashboard 下的路由
+      const dashboardRoute = allRoutes.find(r => r.name === 'Dashboard')
+      if (dashboardRoute) {
+        console.log('Layout: Dashboard 子路由数量:', dashboardRoute.children?.length || 0)
+      }
+
+      // 如果没有菜单，跳转到首页
+      if (!menusWithFullPath || menusWithFullPath.length === 0) {
+        console.log('Layout: 用户没有菜单权限，当前路由:', route.path)
+        if (route.path !== '/dashboard') {
+          router.push('/dashboard')
+        }
+      }
     }
 
     const handleNavigate = (path) => {

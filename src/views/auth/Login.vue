@@ -177,7 +177,7 @@ export default {
       loading.value = true
       try {
         const response = await authApi.login(loginForm)
-        if (response.success) {
+        if (response.success && response.data) {
           // 存储token
           localStorage.setItem('token', response.data.token)
           // 存储userId
@@ -190,7 +190,7 @@ export default {
 
           router.push('/dashboard')
         } else {
-          alert(response.message)
+          alert(response.message || '登录失败')
         }
       } catch (error) {
         console.error('登录失败:', error)

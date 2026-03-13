@@ -1,85 +1,67 @@
 <template>
-  <div class="role-management">
-    <!-- 背景装饰 -->
-    <div class="bg-orb orb-1"></div>
-    <div class="bg-orb orb-2"></div>
+  <PageContainer
+      :show-add="true"
+      add-button-text="新增角色"
+      subtitle="管理系统角色和权限"
+      title="角色管理"
+      @add="handleAdd"
+  >
+    <template #icon>
+      <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path
+            d="M12 2C9.243 2 7 4.243 7 7C7 9.757 9.243 12 12 12C14.757 12 17 9.757 17 7C17 4.243 14.757 2 12 2ZM12 14C8.686 14 3 15.657 3 19V21H21V19C21 15.657 15.314 14 12 14Z"
+            stroke="#3B82F6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+      </svg>
+    </template>
 
-    <!-- 页面头部 -->
-    <div class="page-header glass-card">
-      <div class="header-content">
-        <div class="title-section">
-          <div class="icon-wrapper">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2C9.243 2 7 4.243 7 7C7 9.757 9.243 12 12 12C14.757 12 17 9.757 17 7C17 4.243 14.757 2 12 2ZM12 14C8.686 14 3 15.657 3 19V21H21V19C21 15.657 15.314 14 12 14Z" stroke="url(#paint0_linear)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <defs>
-                <linearGradient id="paint0_linear" x1="3" y1="2" x2="21" y2="21" gradientUnits="userSpaceOnUse">
-                  <stop stop-color="#3B82F6"/>
-                  <stop offset="1" stop-color="#00FFFF"/>
-                </linearGradient>
-              </defs>
-            </svg>
+    <!-- 角色表格 -->
+    <el-table v-loading="loading" :data="roleList" stripe>
+      <el-table-column label="角色ID" prop="roleId" width="200"/>
+      <el-table-column label="角色名称" prop="roleName"/>
+      <el-table-column label="角色标识" prop="roleKey"/>
+      <el-table-column align="center" label="显示顺序" prop="roleSort" width="100"/>
+      <el-table-column align="center" label="状态" prop="status" width="80">
+        <template #default="{ row }">
+          <el-tag v-if="row.status === '0'" class="status-tag" effect="dark" type="success">正常</el-tag>
+          <el-tag v-else class="status-tag" effect="dark" type="danger">停用</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="创建时间" prop="createTime" width="180"/>
+      <el-table-column label="备注" prop="remark" show-overflow-tooltip/>
+      <el-table-column align="center" fixed="right" label="操作" width="260">
+        <template #default="{ row }">
+          <div class="table-actions">
+            <el-button class="table-action-btn" link type="primary" @click="handleEdit(row)">编辑</el-button>
+            <el-button class="table-action-btn" link type="primary" @click="handleAssignMenu(row)">分配菜单</el-button>
+            <el-button class="table-action-btn" link type="danger" @click="handleDelete(row)">删除</el-button>
           </div>
-          <div class="title-text">
-            <h1>角色管理</h1>
-            <p>管理系统角色和权限</p>
-          </div>
-        </div>
-        <el-button type="primary" size="large" @click="handleAdd" class="add-btn">
-          <el-icon><Plus /></el-icon>
-          新增角色
-        </el-button>
-      </div>
-    </div>
+        </template>
+      </el-table-column>
+    </el-table>
 
-    <!-- 角色表格卡片 -->
-    <div class="table-card glass-card">
-      <el-table :data="roleList" stripe class="modern-table">
-        <el-table-column prop="roleId" label="角色ID" width="200" />
-        <el-table-column prop="roleName" label="角色名称" />
-        <el-table-column prop="roleKey" label="角色标识" />
-        <el-table-column prop="roleSort" label="显示顺序" width="100" align="center" />
-        <el-table-column prop="status" label="状态" width="80" align="center">
-          <template #default="{ row }">
-            <el-tag v-if="row.status === '0'" type="success" effect="dark">正常</el-tag>
-            <el-tag v-else type="danger" effect="dark">停用</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="createTime" label="创建时间" width="180" />
-        <el-table-column prop="remark" label="备注" show-overflow-tooltip />
-        <el-table-column label="操作" width="260" align="center" fixed="right">
-          <template #default="{ row }">
-            <div class="action-buttons">
-              <el-button link type="primary" @click="handleEdit(row)" class="action-btn edit-btn">编辑</el-button>
-              <el-button link type="primary" @click="handleAssignMenu(row)" class="action-btn">分配菜单</el-button>
-              <el-button link type="danger" @click="handleDelete(row)" class="action-btn delete-btn">删除</el-button>
-            </div>
-          </template>
-        </el-table-column>
-      </el-table>
-    </div>
-
-    <!-- 角色对话框 -->
+    <!-- 角色编辑对话框 -->
     <el-dialog
         v-model="dialogVisible"
+        :close-on-click-modal="false"
         :title="dialogTitle"
         width="600px"
-        :close-on-click-modal="false"
     >
-      <el-form :model="roleForm" :rules="formRules" ref="roleFormRef" label-width="100px">
+      <el-form ref="roleFormRef" :model="roleForm" :rules="formRules" label-width="100px">
         <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="角色名称" prop="roleName">
-              <el-input v-model="roleForm.roleName" placeholder="请输入角色名称" />
+              <el-input v-model="roleForm.roleName" placeholder="请输入角色名称"/>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="角色标识" prop="roleKey">
-              <el-input v-model="roleForm.roleKey" placeholder="请输入角色标识" />
+              <el-input v-model="roleForm.roleKey" placeholder="请输入角色标识"/>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="显示顺序" prop="roleSort">
-              <el-input-number v-model="roleForm.roleSort" :min="0" :max="999" controls-position="right" style="width: 100%;" />
+              <el-input-number v-model="roleForm.roleSort" :max="999" :min="0" controls-position="right"
+                               style="width: 100%;"/>
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -92,7 +74,7 @@
           </el-col>
           <el-col :span="24">
             <el-form-item label="备注">
-              <el-input v-model="roleForm.remark" type="textarea" :rows="3" placeholder="请输入备注" />
+              <el-input v-model="roleForm.remark" :rows="3" placeholder="请输入备注" type="textarea"/>
             </el-form-item>
           </el-col>
         </el-row>
@@ -108,24 +90,25 @@
     <!-- 分配菜单对话框 -->
     <el-dialog
         v-model="menuDialogVisible"
+        :close-on-click-modal="false"
         title="分配菜单权限"
         width="700px"
-        :close-on-click-modal="false"
     >
       <div class="menu-assign">
         <el-form label-width="100px">
           <el-form-item label="角色名称">
-            <el-input :value="currentRole?.roleName" disabled />
+            <el-input :value="currentRole?.roleName" disabled/>
           </el-form-item>
           <el-form-item label="菜单权限">
             <el-tree
+                :key="menuTreeKey"
                 ref="menuTreeRef"
                 :data="menuTreeData"
-                :props="{ label: 'menuName', children: 'children' }"
                 :default-checked-keys="checkedMenuKeys"
+                :props="{ label: 'menuName', children: 'children' }"
+                default-expand-all
                 node-key="menuId"
                 show-checkbox
-                default-expand-all
             />
           </el-form-item>
         </el-form>
@@ -137,14 +120,14 @@
         </span>
       </template>
     </el-dialog>
-  </div>
+  </PageContainer>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Edit, Delete } from '@element-plus/icons-vue'
-import { permissionApi } from '@/api/permission'
+import {nextTick, onMounted, reactive, ref} from 'vue'
+import {ElMessage, ElMessageBox} from 'element-plus'
+import PageContainer from '@/components/PageContainer.vue'
+import {permissionApi} from '@/api/permission'
 
 // 状态
 const roleList = ref([])
@@ -156,6 +139,8 @@ const roleFormRef = ref(null)
 const menuTreeRef = ref(null)
 const currentRole = ref(null)
 const checkedMenuKeys = ref([])
+const menuTreeKey = ref(0)
+const loading = ref(false)
 
 // 表单数据
 const roleForm = reactive({
@@ -170,21 +155,22 @@ const roleForm = reactive({
 // 表单验证规则
 const formRules = {
   roleName: [
-    { required: true, message: '请输入角色名称', trigger: 'blur' }
+    {required: true, message: '请输入角色名称', trigger: 'blur'}
   ],
   roleKey: [
-    { required: true, message: '请输入角色标识', trigger: 'blur' }
+    {required: true, message: '请输入角色标识', trigger: 'blur'}
   ],
   roleSort: [
-    { required: true, message: '请输入显示顺序', trigger: 'blur' }
+    {required: true, message: '请输入显示顺序', trigger: 'blur'}
   ]
 }
 
 // 方法
 const getRoleList = async () => {
+  loading.value = true
   try {
     const response = await permissionApi.getRoleList()
-    if (response.success) {
+    if (response.code == 200) {
       roleList.value = response.data
     } else {
       ElMessage.error(response.message || '获取角色列表失败')
@@ -192,13 +178,15 @@ const getRoleList = async () => {
   } catch (error) {
     console.error('获取角色列表失败:', error)
     ElMessage.error('获取角色列表失败')
+  } finally {
+    loading.value = false
   }
 }
 
 const getMenuTree = async () => {
   try {
     const response = await permissionApi.getMenuTree()
-    if (response.success) {
+    if (response.code == 200) {
       menuTreeData.value = response.data
     }
   } catch (error) {
@@ -230,7 +218,7 @@ const handleEdit = async (row) => {
   resetForm()
   try {
     const response = await permissionApi.getRoleDetail(row.roleId)
-    if (response.success && response.data) {
+    if (response.code == 200 && response.data) {
       Object.assign(roleForm, response.data)
       dialogTitle.value = '编辑角色'
       dialogVisible.value = true
@@ -251,14 +239,12 @@ const handleSubmit = async () => {
       try {
         let response
         if (roleForm.roleId) {
-          // 更新
           response = await permissionApi.updateRole(roleForm)
         } else {
-          // 新增
           response = await permissionApi.createRole(roleForm)
         }
 
-        if (response.success) {
+        if (response.code == 200) {
           ElMessage.success(roleForm.roleId ? '修改成功' : '新增成功')
           dialogVisible.value = false
           getRoleList()
@@ -285,7 +271,7 @@ const handleDelete = (row) => {
   ).then(async () => {
     try {
       const response = await permissionApi.deleteRole(row.roleId)
-      if (response.success) {
+      if (response.code == 200) {
         ElMessage.success('删除成功')
         getRoleList()
       } else {
@@ -295,16 +281,40 @@ const handleDelete = (row) => {
       console.error('删除失败:', error)
       ElMessage.error('删除失败')
     }
-  }).catch(() => {})
+  }).catch(() => {
+  })
 }
 
 const handleAssignMenu = async (row) => {
   currentRole.value = row
-  checkedMenuKeys.value = []
-  menuDialogVisible.value = true
 
-  // 这里可以获取角色已有的菜单权限
-  // 暂时留空，需要后端提供获取角色菜单ID列表的接口
+  // 先清空选中状态，避免显示上一次的数据
+  checkedMenuKeys.value = []
+
+  // 获取角色已有的菜单权限
+  try {
+    const response = await permissionApi.getRoleMenuIds(row.roleId)
+    console.log('角色菜单权限响应 - roleId:', row.roleId, response)
+    if (response.code == 200) {
+      // 确保数据是数组
+      checkedMenuKeys.value = Array.isArray(response.data) ? response.data : []
+      console.log('设置 checkedMenuKeys:', checkedMenuKeys.value)
+    } else {
+      checkedMenuKeys.value = []
+    }
+  } catch (error) {
+    console.error('获取角色菜单权限失败:', error)
+    checkedMenuKeys.value = []
+  }
+
+  console.log('最终回显的菜单ID:', checkedMenuKeys.value)
+
+  // 数据更新后再更新 key，强制重新渲染
+  menuTreeKey.value++
+
+  // 使用 nextTick 确保 DOM 更新后再打开对话框
+  await nextTick()
+  menuDialogVisible.value = true
 }
 
 const handleSaveMenu = async () => {
@@ -316,7 +326,7 @@ const handleSaveMenu = async () => {
 
   try {
     const response = await permissionApi.assignMenus(currentRole.value.roleId, allCheckedKeys)
-    if (response.success) {
+    if (response.code == 200) {
       ElMessage.success('分配成功')
       menuDialogVisible.value = false
     } else {
@@ -337,26 +347,17 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.role-management {
-  padding: 20px;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.page-header h2 {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--el-text-color-primary);
-}
+@import '@/styles/table.css';
+@import '@/styles/dialog.css';
 
 .menu-assign {
   max-height: 500px;
   overflow-y: auto;
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
 }
 </style>

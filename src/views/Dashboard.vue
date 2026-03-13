@@ -3,45 +3,115 @@
     <div class="header animate-fade-in">
       <h1 class="gradient-text">综合数据管理平台</h1>
       <div class="user-info">
-        <span>欢迎回来！</span>
-        <router-link class="btn btn-secondary" to="/auth/profile">
-          <i class="icon-profile"></i>
-          个人信息
-        </router-link>
+        <span>欢迎回来，{{ userName }}！</span>
+        <el-dropdown class="user-dropdown" @command="handleCommand">
+          <span class="el-dropdown-link">
+            <el-icon><User/></el-icon>
+            个人管理
+            <el-icon class="el-icon--right"><arrow-down/></el-icon>
+          </span>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item command="profile">
+                <el-icon>
+                  <User/>
+                </el-icon>
+                个人信息
+              </el-dropdown-item>
+              <el-dropdown-item command="password">
+                <el-icon>
+                  <Lock/>
+                </el-icon>
+                修改密码
+              </el-dropdown-item>
+              <el-dropdown-item command="logout" divided>
+                <el-icon>
+                  <SwitchButton/>
+                </el-icon>
+                退出登录
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
       </div>
     </div>
 
     <div class="nav-cards">
-      <div class="card glass-card animate-fade-in" @click="$router.push('/demo/users')">
-        <div class="card-icon">
-          <i class="icon-user"></i>
-        </div>
-        <h3>演示模块</h3>
-        <p>用户列表管理</p>
-      </div>
-
-      <div class="card glass-card animate-fade-in" @click="$router.push('/permission/management')">
-        <div class="card-icon">
-          <i class="icon-permission"></i>
-        </div>
-        <h3>权限管理</h3>
-        <p>用户角色权限分配</p>
-      </div>
-
-      <div class="card glass-card animate-fade-in" @click="$router.push('/auth/profile')">
-        <div class="card-icon">
-          <i class="icon-profile"></i>
-        </div>
-        <h3>个人中心</h3>
-        <p>查看个人信息</p>
-      </div>
+      <!-- 菜单已移除，通过侧边栏菜单访问 -->
     </div>
   </div>
 </template>
 
 <script>
+import {onMounted, ref} from 'vue'
+import {useRouter} from 'vue-router'
+import {ElMessage} from 'element-plus'
+import {ArrowDown, Lock, SwitchButton, User} from '@element-plus/icons-vue'
+import {authApi} from '@/api/auth'
+import {userStore} from '@/store/user'
+
 export default {
-  name: 'Dashboard'
+  name: 'Dashboard',
+  components: {
+    User,
+    Lock,
+    SwitchButton,
+    ArrowDown
+  },
+  setup() {
+    const router = useRouter()
+    const userName = ref('用户')
+
+    // 获取用户信息
+    const loadUserInfo = async () => {
+      try {
+        const response = await authApi.getUserInfo()
+        if (response.code == 200 && response.data) {
+          userName.value = response.data.nickName || response.data.username || '用户'
+        }
+      } catch (error) {
+        console.error('获取用户信息失败:', error)
+      }
+    }
+
+    // 处理下拉菜单命令
+    const handleCommand = (command) => {
+      switch (command) {
+        case 'profile':
+          router.push('/dashboard/profile')
+          break
+        case 'password':
+          router.push('/dashboard/password')
+          break
+        case 'logout':
+          logout()
+          break
+      }
+    }
+
+    // 退出登录
+    const logout = async () => {
+      try {
+        await authApi.logout()
+        userStore.clearUserData()
+        localStorage.clear()
+        ElMessage.success('退出登录成功')
+        router.push('/auth/login')
+      } catch (error) {
+        console.error('退出登录失败:', error)
+        ElMessage.error('退出登录失败')
+      }
+    }
+
+    onMounted(() => {
+      loadUserInfo()
+    })
+
+    return {
+      userName,
+      handleCommand
+    }
+  }
 }
 </script>
 
@@ -72,6 +142,26 @@ export default {
   align-items: center;
   gap: 16px;
   color: rgba(235, 235, 235, 0.8);
+}
+
+.user-dropdown {
+  margin-left: 8px;
+}
+
+.el-dropdown-link {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  color: rgba(235, 235, 235, 0.9);
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.el-dropdown-link:hover {
+  background: rgba(59, 130, 246, 0.2);
+  color: #3B82F6;
 }
 
 .nav-cards {
@@ -158,18 +248,5 @@ export default {
 
 .card:hover p {
   color: rgba(235, 235, 235, 0.8);
-}
-
-/* Icon styles */
-.icon-profile::before {
-  content: '👨‍💼';
-}
-
-.icon-user::before {
-  content: '👤';
-}
-
-.icon-permission::before {
-  content: '🔒';
 }
 </style>

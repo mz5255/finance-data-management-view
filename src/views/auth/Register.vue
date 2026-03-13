@@ -134,6 +134,8 @@
 import {onMounted, reactive, ref} from 'vue'
 import {useRouter} from 'vue-router'
 import {authApi} from '@/api/auth'
+import {userStore} from '@/store/user'
+import {registerDynamicRoutes} from '@/router'
 import {v4 as uuidv4} from 'uuid'
 
 export default {
@@ -179,19 +181,21 @@ export default {
       loading.value = true
       try {
         const response = await authApi.register(registerForm)
-        if (response.success) {
+        if (response.success && response.data) {
           // 注册成功后存储token
-          if (response.data && response.data.token) {
-            localStorage.setItem('token', response.data.token)
-            // 直接跳转到仪表板
-            router.push('/dashboard')
-          } else {
-            // 如果没有返回token，跳转到登录页
-            alert('注册成功')
-            router.push('/auth/login')
-          }
+          localStorage.setItem('token', response.data.token)
+          localStorage.setItem('userId', response.data.userId)
+
+          // 加载用户数据和菜单
+          await userStore.loadUserData(response.data.userId)
+
+          // 注册动态路由
+          registerDynamicRoutes(userStore.menus)
+
+          // 跳转到仪表板
+          router.push('/dashboard')
         } else {
-          alert(response.message)
+          alert(response.message || '注册失败')
         }
       } catch (error) {
         console.error('注册失败:', error)

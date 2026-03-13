@@ -1,21 +1,15 @@
 <template>
   <div class="menu-item">
+    <!-- 目录类型或有子菜单的项 - 只展开，不导航 -->
     <div
-        v-if="!menu.children || menu.children.length === 0"
-        :class="['menu-link', { active: isActive }]"
-        @click="$emit('navigate', menu.fullPath)"
+        v-if="(menu.menuType && menu.menuType.toUpperCase() === 'M') || (menu.children && menu.children.length > 0)"
+        class="menu-group"
     >
-      <i :class="menu.icon || 'icon-default'"></i>
-      <span>{{ menu.menuName }}</span>
-    </div>
-
-    <div v-else class="menu-group">
       <div
           :class="['menu-parent', { expanded: isExpanded }]"
           @click="toggleExpand"
       >
-        <i :class="menu.icon || 'icon-default'"
-        ></i>
+        <i :class="menu.icon || 'icon-default'"></i>
         <span>{{ menu.menuName }}</span>
         <i class="expand-icon">{{ isExpanded ? '▼' : '▶' }}</i>
       </div>
@@ -28,6 +22,16 @@
             @navigate="$emit('navigate', $event)"
         />
       </div>
+    </div>
+
+    <!-- 菜单类型（有实际页面）- 可导航 -->
+    <div
+        v-else
+        :class="['menu-link', { active: isActive }]"
+        @click="handleClick"
+    >
+      <i :class="menu.icon || 'icon-default'"></i>
+      <span>{{ menu.menuName }}</span>
     </div>
   </div>
 </template>
@@ -45,9 +49,12 @@ export default {
     }
   },
   emits: ['navigate'],
-  setup(props) {
+  setup(props, {emit}) {
     const route = useRoute()
     const isExpanded = ref(false)
+
+    // 调试：打印菜单数据
+    console.log('MenuItem menu:', props.menu)
 
     const isActive = computed(() => {
       // 使用 fullPath 进行匹配
@@ -59,10 +66,30 @@ export default {
       isExpanded.value = !isExpanded.value
     }
 
+    const handleClick = () => {
+      const path = props.menu.fullPath || props.menu.path
+      console.log('MenuItem 点击:', {
+        menuName: props.menu.menuName,
+        fullPath: props.menu.fullPath,
+        path: props.menu.path,
+        finalPath: path,
+        component: props.menu.component
+      })
+      // 只对有实际页面的菜单项触发导航
+      if (path && props.menu.component) {
+        emit('navigate', path)
+      } else if (!path) {
+        console.warn('菜单没有 fullPath 或 path:', props.menu)
+      } else if (!props.menu.component) {
+        console.warn('菜单没有 component:', props.menu)
+      }
+    }
+
     return {
       isExpanded,
       isActive,
-      toggleExpand
+      toggleExpand,
+      handleClick
     }
   }
 }
