@@ -3,7 +3,8 @@
 /* 主容器 */
 .ai-chat-container {
     display: flex;
-    height: calc(100vh - 120px);
+    flex: 1;
+    min-height: 0;
     background: #f5f7fa;
     border-radius: 16px;
     overflow: hidden;

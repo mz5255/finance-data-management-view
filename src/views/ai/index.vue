@@ -386,6 +386,13 @@ onMounted(async () => {
   height: 100%;
   padding: 20px;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.ai-chat-container {
+  flex: 1;
+  min-height: 0;
 }
 
 .empty-conversations {
