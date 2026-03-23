@@ -1,5 +1,24 @@
 import {createRouter, createWebHistory} from 'vue-router'
 import {userStore} from '@/store/user'
+import axios from 'axios'
+
+// 验证 token 是否有效
+const validateToken = async (token) => {
+    if (!token) return false
+
+    try {
+        const response = await axios.get('/api/finance-data/auth/validate', {
+            headers: {
+                'satoken': token
+            },
+            timeout: 5000
+        })
+        return response.data && response.data.code === 200
+    } catch (error) {
+        console.error('Token 验证失败:', error)
+        return false
+    }
+}
 
 // 导入页面组件
 import Login from '@/views/auth/Login.vue'
@@ -61,6 +80,9 @@ const router = createRouter({
 // 记录已注册的动态路由名称
 const registeredDynamicRoutes = new Set()
 
+// 标记动态路由是否已初始化
+let dynamicRoutesInitialized = false
+
 // 清理已注册的动态路由
 const clearDynamicRoutes = () => {
     const dashboardRoute = router.getRoutes().find(r => r.name === 'Dashboard')
@@ -104,6 +126,9 @@ export const registerDynamicRoutes = (menus) => {
         router.addRoute('Dashboard', route)
     })
 
+    // 标记动态路由已初始化
+    dynamicRoutesInitialized = true
+
     console.log('当前路由表:', router.getRoutes())
     console.log('已注册的动态路由:', Array.from(registeredDynamicRoutes))
 
@@ -140,6 +165,8 @@ const componentMap = {
     'system/user/index': () => import('../views/system/user/index.vue'),
     'system/role/index': () => import('../views/system/role/index.vue'),
     'system/menu/index': () => import('../views/system/menu/index.vue'),
+    // AI 模块
+    'ai/index': () => import('../views/ai/index.vue'),
 }
 
 // 根据组件路径获取组件（自动映射 + 手动映射）
@@ -229,7 +256,7 @@ const generateRoutes = (menus) => {
 router.beforeEach(async (to, from, next) => {
     const token = localStorage.getItem('token')
 
-    console.log('路由守卫:', {to: to.path, from: from.path, meta: to.meta})
+    console.log('路由守卫:', {to: to.path, from: from.path, meta: to.meta, dynamicRoutesInitialized})
 
     // 设置页面标题
     if (to.meta.title) {
@@ -241,6 +268,66 @@ router.beforeEach(async (to, from, next) => {
         console.log('需要登录但未找到 token，跳转到登录页')
         next('/auth/login')
         return
+    }
+
+    // 处理刷新页面时动态路由丢失的问题
+    if (token && !dynamicRoutesInitialized) {
+        console.log('检测到刷新页面，正在验证 token 并恢复动态路由...')
+
+        // 先验证 token 是否有效
+        const isValid = await validateToken(token)
+        if (!isValid) {
+            console.log('Token 无效或已过期，清除并跳转到登录页')
+            localStorage.removeItem('token')
+            localStorage.removeItem('userMenus')
+            localStorage.removeItem('userPermissions')
+            localStorage.removeItem('userRoles')
+            localStorage.removeItem('userInfo')
+            next('/auth/login')
+            return
+        }
+
+        // 尝试从 localStorage 恢复菜单数据
+        const cachedMenus = localStorage.getItem('userMenus')
+        const cachedPermissions = localStorage.getItem('userPermissions')
+        const cachedRoles = localStorage.getItem('userRoles')
+
+        if (cachedMenus) {
+            try {
+                const menus = JSON.parse(cachedMenus)
+                // 恢复 userStore 数据
+                userStore.menus.push(...menus)
+                if (cachedPermissions) {
+                    userStore.permissions.push(...JSON.parse(cachedPermissions))
+                }
+                if (cachedRoles) {
+                    userStore.roles.push(...JSON.parse(cachedRoles))
+                }
+
+                // 注册动态路由
+                registerDynamicRoutes(menus)
+                console.log('动态路由恢复完成')
+
+                // 重新导航到目标路由（确保路由已注册）
+                next({ ...to, replace: true })
+                return
+            } catch (e) {
+                console.error('恢复菜单数据失败:', e)
+                // 恢复失败，清除缓存并跳转登录
+                localStorage.removeItem('token')
+                localStorage.removeItem('userMenus')
+                localStorage.removeItem('userPermissions')
+                localStorage.removeItem('userRoles')
+                localStorage.removeItem('userInfo')
+                next('/auth/login')
+                return
+            }
+        } else {
+            console.log('localStorage 中没有缓存的菜单数据，跳转到登录页')
+            localStorage.removeItem('token')
+            next('/auth/login')
+            return
+        }
     }
 
     // 检查权限（如果有权限要求）
