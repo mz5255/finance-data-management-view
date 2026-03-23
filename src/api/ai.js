@@ -1,4 +1,14 @@
 import request from '@/utils/request'
+import { ElMessage } from 'element-plus'
+
+// 处理 401 未授权
+const handleUnauthorized = () => {
+    localStorage.removeItem('token')
+    ElMessage.error('登录已过期，请重新登录')
+    if (window.location.pathname !== '/auth/login') {
+        window.location.href = '/auth/login'
+    }
+}
 
 export const aiApi = {
     // 发送消息（流式），支持取消
@@ -15,6 +25,13 @@ export const aiApi = {
                     body: JSON.stringify(data),
                     signal: abortSignal
                 })
+
+                // 处理 401 未授权
+                if (response.status === 401) {
+                    handleUnauthorized()
+                    reject(new Error('未授权'))
+                    return
+                }
 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`)
@@ -82,6 +99,13 @@ export const aiApi = {
                     body: formData,
                     signal: abortSignal
                 })
+
+                // 处理 401 未授权
+                if (response.status === 401) {
+                    handleUnauthorized()
+                    reject(new Error('未授权'))
+                    return
+                }
 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`)
