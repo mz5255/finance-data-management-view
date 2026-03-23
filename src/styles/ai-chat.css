@@ -111,6 +111,8 @@
 /* 右侧对话区域 */
 .chat-main {
     flex: 1;
+    min-height: 0;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     background: #fff;
