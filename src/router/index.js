@@ -1,19 +1,20 @@
 import {createRouter, createWebHistory} from 'vue-router'
 import {userStore} from '@/store/user'
-import axios from 'axios'
+import request from '@/utils/request'
 
 // 验证 token 是否有效
 const validateToken = async (token) => {
     if (!token) return false
 
     try {
-        const response = await axios.get('/api/finance-data/auth/validate', {
-            headers: {
-                'satoken': token
-            },
+        const response = await request({
+            url: '/api/finance-data/auth/validate',
+            method: 'get',
             timeout: 5000
         })
-        return response.data && response.data.code === 200
+        // request 拦截器会自动添加 token
+        // 返回的 response 已经是 response.data
+        return response && response.code === 200
     } catch (error) {
         console.error('Token 验证失败:', error)
         return false
