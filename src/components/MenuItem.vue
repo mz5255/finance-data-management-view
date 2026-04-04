@@ -53,11 +53,7 @@ export default {
     const route = useRoute()
     const isExpanded = ref(false)
 
-    // 调试：打印菜单数据
-    console.log('MenuItem menu:', props.menu)
-
     const isActive = computed(() => {
-      // 使用 fullPath 进行匹配
       const menuPath = props.menu.fullPath || props.menu.path
       return route.path === menuPath
     })
@@ -68,20 +64,8 @@ export default {
 
     const handleClick = () => {
       const path = props.menu.fullPath || props.menu.path
-      console.log('MenuItem 点击:', {
-        menuName: props.menu.menuName,
-        fullPath: props.menu.fullPath,
-        path: props.menu.path,
-        finalPath: path,
-        component: props.menu.component
-      })
-      // 只对有实际页面的菜单项触发导航
       if (path && props.menu.component) {
         emit('navigate', path)
-      } else if (!path) {
-        console.warn('菜单没有 fullPath 或 path:', props.menu)
-      } else if (!props.menu.component) {
-        console.warn('菜单没有 component:', props.menu)
       }
     }
 

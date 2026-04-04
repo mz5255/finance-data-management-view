@@ -72,15 +72,17 @@
         </div>
 
         <!-- 对话容器 -->
-        <ChatContainer
-          ref="chatRef"
-          :conversation-id="currentConversationId"
-          :agent-type="currentAgentType"
-          :initial-messages="currentMessages"
-          @message-sent="onMessageSent"
-          @message-received="onMessageReceived"
-          @error="onError"
-        />
+        <div class="chat-container-wrapper">
+          <ChatContainer
+              ref="chatRef"
+              :agent-type="currentAgentType"
+              :conversation-id="currentConversationId"
+              :initial-messages="currentMessages"
+              @error="onError"
+              @message-sent="onMessageSent"
+              @message-received="onMessageReceived"
+          />
+        </div>
       </div>
     </div>
 
@@ -99,19 +101,12 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, markRaw } from 'vue'
-import {
-  Plus,
-  Delete,
-  ChatDotRound,
-  ChatLineSquare,
-  Document,
-  DataAnalysis
-} from '@element-plus/icons-vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import {computed, markRaw, onMounted, reactive, ref} from 'vue'
+import {ChatDotRound, ChatLineSquare, DataAnalysis, Delete, Document, Plus} from '@element-plus/icons-vue'
+import {ElMessage, ElMessageBox} from 'element-plus'
 import ChatContainer from './components/ChatContainer.vue'
 import ConfirmationDialog from './components/ConfirmationDialog.vue'
-import { aiApi } from '@/api/ai'
+import {aiApi} from '@/api/ai'
 
 // Agent 类型配置
 const agentTypes = [
@@ -406,5 +401,11 @@ onMounted(async () => {
 
 .empty-conversations p {
   margin-bottom: 16px;
+}
+
+.chat-container-wrapper {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 </style>

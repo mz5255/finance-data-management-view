@@ -153,22 +153,17 @@ export default {
 
     // 页面加载时自动获取验证码
     onMounted(() => {
-      console.log('页面加载，开始获取验证码')
       getCaptcha()
     })
 
     const getCaptcha = async () => {
       try {
-        // 生成uuid+时间戳
         captchaKey.value = `${uuidv4()}_${Date.now()}`
         loginForm.captchaKey = captchaKey.value
 
-        console.log('开始获取验证码...', captchaKey.value)
         const imageUrl = await authApi.getCaptcha(captchaKey.value)
-        console.log('验证码URL:', imageUrl)
         captchaImage.value = imageUrl
       } catch (error) {
-        console.error('获取验证码失败:', error)
         captchaImage.value = ''
       }
     }
@@ -178,22 +173,16 @@ export default {
       try {
         const response = await authApi.login(loginForm)
         if (response.success && response.data) {
-          // 存储token
           localStorage.setItem('token', response.data.token)
-          // 存储userId
           localStorage.setItem('userId', response.data.userId)
-          // 加载用户数据和菜单
           await userStore.loadUserData(response.data.userId)
-
-          // 注册动态路由
           registerDynamicRoutes(userStore.menus)
-
           router.push('/dashboard')
         } else {
           alert(response.message || '登录失败')
         }
       } catch (error) {
-        console.error('登录失败:', error)
+        // 登录失败
       } finally {
         loading.value = false
       }

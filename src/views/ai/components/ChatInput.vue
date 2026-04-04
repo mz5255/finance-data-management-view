@@ -1,9 +1,13 @@
 <template>
-  <div class="chat-input-container">
+  <div class="chat-input-container" @paste="handlePaste">
     <!-- 已上传文件列表 -->
     <div v-if="uploadedFiles.length > 0" class="uploaded-files">
       <div v-for="(file, index) in uploadedFiles" :key="index" class="file-tag">
-        <el-icon class="file-icon"><Document /></el-icon>
+        <!-- 图片预览 -->
+        <img v-if="isImage(file)" :src="getFilePreview(file)" class="file-preview"/>
+        <el-icon v-else class="file-icon">
+          <Document/>
+        </el-icon>
         <span class="file-name">{{ file.name }}</span>
         <span class="file-size">{{ formatFileSize(file.size) }}</span>
         <el-icon class="remove-icon" @click="removeFile(index)"><Close /></el-icon>
@@ -63,7 +67,7 @@
     <div class="input-hints">
       <span class="hint">
         <el-icon><Paperclip /></el-icon>
-        支持文件上传 | 按 Enter 发送，Shift + Enter 换行
+        支持文件/图片上传，可直接粘贴图片 | 按 Enter 发送，Shift + Enter 换行
       </span>
       <span v-if="loading" class="loading-hint">
         <el-icon class="is-loading"><Loading /></el-icon>
@@ -74,9 +78,9 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick } from 'vue'
-import { Promotion, Loading, VideoPause, Paperclip, Document, Close } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
+import {computed, nextTick, reactive, ref} from 'vue'
+import {Close, Document, Loading, Paperclip, Promotion, VideoPause} from '@element-plus/icons-vue'
+import {ElMessage} from 'element-plus'
 
 const props = defineProps({
   disabled: {
@@ -136,6 +140,52 @@ const beforeUpload = (file) => {
   return true
 }
 
+// 处理粘贴事件
+const handlePaste = async (e) => {
+  const items = e.clipboardData?.items
+  if (!items) return
+
+  for (const item of items) {
+    if (item.type.startsWith('image/')) {
+      e.preventDefault()
+      const file = item.getAsFile()
+      if (file) {
+        await addFile(file, true)
+      }
+      break
+    }
+  }
+}
+
+// 添加文件
+const addFile = async (file, isPaste = false) => {
+  if (!beforeUpload(file)) return
+
+  // 为粘贴的图片生成文件名
+  if (isPaste && !file.name) {
+    const ext = file.type.split('/')[1] || 'png'
+    file = new File([file], `粘贴图片_${Date.now()}.${ext}`, {type: file.type})
+  }
+
+  uploadedFiles.value.push(file)
+  ElMessage.success(`已添加: ${file.name}`)
+}
+
+// 判断是否为图片
+const isImage = (file) => {
+  return file.type?.startsWith('image/')
+}
+
+// 获取文件预览URL
+const filePreviewUrls = reactive({})
+const getFilePreview = (file) => {
+  if (!isImage(file)) return null
+  if (!filePreviewUrls[file.name]) {
+    filePreviewUrls[file.name] = URL.createObjectURL(file)
+  }
+  return filePreviewUrls[file.name]
+}
+
 const handleFileSelect = (options) => {
   const file = options.file
   uploadedFiles.value.push(file)
@@ -143,6 +193,12 @@ const handleFileSelect = (options) => {
 }
 
 const removeFile = (index) => {
+  const file = uploadedFiles.value[index]
+  // 清理预览URL
+  if (filePreviewUrls[file.name]) {
+    URL.revokeObjectURL(filePreviewUrls[file.name])
+    delete filePreviewUrls[file.name]
+  }
   uploadedFiles.value.splice(index, 1)
 }
 
@@ -167,7 +223,7 @@ const handleSend = () => {
 
   if (files.length > 0) {
     // 有文件，使用文件上传方式
-    emit('sendWithFiles', message, files)
+    emit('sendWithFiles', {text: message, files})
   } else if (message) {
     // 只有文本
     emit('send', message)
@@ -176,6 +232,9 @@ const handleSend = () => {
   // 清空
   inputText.value = ''
   uploadedFiles.value = []
+  // 清理预览URL
+  Object.values(filePreviewUrls).forEach(url => URL.revokeObjectURL(url))
+  Object.keys(filePreviewUrls).forEach(key => delete filePreviewUrls[key])
 
   nextTick(() => {
     autoResize()
@@ -226,6 +285,13 @@ defineExpose({
   border: 1px solid #b3d8ff;
   border-radius: 6px;
   font-size: 13px;
+}
+
+.file-preview {
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  border-radius: 4px;
 }
 
 .file-icon {
